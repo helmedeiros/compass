@@ -66,6 +66,14 @@
         <artifactId>jetty-maven-plugin</artifactId>
         <version>9.1.0.v20131115</version>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <configuration>
+          <mainClass>com.compass.app.SimulatorDemo</mainClass>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
