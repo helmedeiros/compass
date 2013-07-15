@@ -43,10 +43,10 @@ public class IngestControllerTest {
     public void accepts_an_event_and_stores_it_for_the_entity() throws Exception {
         mockMvc.perform(post("/events")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"entityId\":\"alice\",\"type\":\"search\",\"occurredAt\":\"2013-07-15T09:00:00\"}"))
+                .content("{\"entityId\":\"ingest-sam\",\"type\":\"search\",\"occurredAt\":\"2013-07-15T09:00:00\"}"))
                 .andExpect(status().isAccepted());
 
-        assertThat(eventStore.eventsOf(EntityId.of("alice")).size(), is(1));
+        assertThat(eventStore.eventsOf(EntityId.of("ingest-sam")).size(), is(1));
     }
 
     @Test

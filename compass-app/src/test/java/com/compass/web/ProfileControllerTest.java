@@ -38,13 +38,13 @@ public class ProfileControllerTest {
     @Test
     public void reports_the_primary_profile_and_confidence_from_posted_events() throws Exception {
         for (int i = 0; i < 8; i++) {
-            postEvent("alice", "search");
+            postEvent("explorer-eve", "search");
         }
         for (int i = 0; i < 2; i++) {
-            postEvent("alice", "purchase");
+            postEvent("explorer-eve", "purchase");
         }
 
-        String body = mockMvc.perform(get("/entities/alice/profile"))
+        String body = mockMvc.perform(get("/entities/explorer-eve/profile"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
@@ -55,7 +55,7 @@ public class ProfileControllerTest {
 
     @Test
     public void reports_no_opinion_for_an_unseen_entity() throws Exception {
-        String body = mockMvc.perform(get("/entities/stranger/profile"))
+        String body = mockMvc.perform(get("/entities/profile-ghost/profile"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
