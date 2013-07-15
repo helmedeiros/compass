@@ -1,0 +1,73 @@
+package com.compass.web;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
+import com.compass.config.CompassConfiguration;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@WebAppConfiguration
+@ContextConfiguration(classes = {CompassConfiguration.class, WebMvcConfiguration.class})
+public class ProfileControllerTest {
+
+    @Autowired
+    private WebApplicationContext context;
+
+    private MockMvc mockMvc;
+
+    @Before
+    public void setUp() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+    }
+
+    @Test
+    public void reports_the_primary_profile_and_confidence_from_posted_events() throws Exception {
+        for (int i = 0; i < 8; i++) {
+            postEvent("alice", "search");
+        }
+        for (int i = 0; i < 2; i++) {
+            postEvent("alice", "purchase");
+        }
+
+        String body = mockMvc.perform(get("/entities/alice/profile"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(body, containsString("\"primaryProfile\":\"Explorer\""));
+        assertThat(body, containsString("\"confidence\":0.8"));
+        assertThat(body, containsString("\"high_search_depth\""));
+    }
+
+    @Test
+    public void reports_no_opinion_for_an_unseen_entity() throws Exception {
+        String body = mockMvc.perform(get("/entities/stranger/profile"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(body, containsString("\"primaryProfile\":null"));
+        assertThat(body, containsString("\"confidence\":0.0"));
+    }
+
+    private void postEvent(String entityId, String type) throws Exception {
+        mockMvc.perform(post("/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"entityId\":\"" + entityId + "\",\"type\":\"" + type
+                        + "\",\"occurredAt\":\"2013-07-15T09:00:00\"}"))
+                .andExpect(status().isAccepted());
+    }
+}
