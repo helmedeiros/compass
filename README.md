@@ -12,6 +12,12 @@ are the profiles. A profile is a hypothesis, not a truth. Every answer can be
 explained: the current profiles, a confidence score, the evidence behind it, and
 how it changed over time.
 
+## Project site
+
+A guided tour with real request and response examples, plus ideas for
+experimentation and for news portals building recommendations, lives at
+<https://helmedeiros.github.io/compass/>.
+
 ## Architecture
 
 The design is hexagonal (ports and adapters). Two modules keep it clean:
