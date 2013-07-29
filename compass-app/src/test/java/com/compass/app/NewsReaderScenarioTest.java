@@ -1,4 +1,4 @@
-package com.compass.config;
+package com.compass.app;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.closeTo;
@@ -8,40 +8,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.compass.domain.model.Classification;
 import com.compass.domain.model.EntityId;
-import com.compass.domain.model.Event;
 import com.compass.domain.model.Profile;
-import com.compass.domain.port.in.ClassifyEntity;
-import com.compass.domain.port.in.IngestEvent;
 import com.compass.simulator.EventSimulator;
 import com.compass.simulator.SyntheticBehavior;
 
-public class CompassConfigurationTest {
+public class NewsReaderScenarioTest {
 
     private static final double TOLERANCE = 1e-9;
 
-    private AnnotationConfigApplicationContext context;
-
-    @Before
-    public void startContext() {
-        context = new AnnotationConfigApplicationContext(CompassConfiguration.class);
-    }
-
-    @After
-    public void closeContext() {
-        context.close();
-    }
+    private final InMemoryCompass compass = new InMemoryCompass();
+    private final EventSimulator simulator = new EventSimulator(compass.ingest());
 
     @Test
-    public void wires_a_compass_that_segments_a_reader_from_ingested_events() {
+    public void a_reader_who_mostly_follows_sports_is_segmented_as_a_sports_follower() {
         EntityId ana = EntityId.of("ana");
-        EventSimulator simulator = new EventSimulator(context.getBean(IngestEvent.class));
 
         simulator.simulate(
                 SyntheticBehavior.forEntity(ana)
@@ -51,20 +35,23 @@ public class CompassConfigurationTest {
                         .does("subscribe", 1),
                 DateTime.now());
 
-        Classification classification = context.getBean(ClassifyEntity.class).classify(ana);
+        Classification classification = compass.classifier().classify(ana);
 
+        assertThat(classification.entityId(), is(ana));
         assertThat(classification.primaryProfile(), is(Profile.of("Sports Follower")));
         assertThat(classification.confidence(), is(closeTo(0.8 / 1.3, TOLERANCE)));
+        assertThat(classification.distribution().probabilityOf(Profile.of("Subscriber")),
+                is(closeTo(0.3 / 1.3, TOLERANCE)));
+        assertThat(classification.distribution().probabilityOf(Profile.of("Markets Watcher")),
+                is(closeTo(0.2 / 1.3, TOLERANCE)));
     }
 
     @Test
-    public void shares_one_event_store_between_ingestion_and_classification() {
-        EntityId bob = EntityId.of("bob");
-        context.getBean(IngestEvent.class).ingest(Event.of(bob, "article_view", DateTime.now(), topic("sports")));
+    public void an_unseen_reader_has_no_opinion() {
+        Classification classification = compass.classifier().classify(EntityId.of("stranger"));
 
-        Classification classification = context.getBean(ClassifyEntity.class).classify(bob);
-
-        assertThat(classification.distribution().isEmpty(), is(false));
+        assertThat(classification.distribution().isEmpty(), is(true));
+        assertThat(classification.confidence(), is(0.0));
     }
 
     private Map<String, Object> topic(String value) {

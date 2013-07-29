@@ -38,16 +38,16 @@ public class HistoryControllerTest {
 
     @Test
     public void keeps_one_snapshot_for_each_ingested_event() throws Exception {
-        postEvent("history-mia", "search");
-        postEvent("history-mia", "search");
-        postEvent("history-mia", "search");
+        postSportsView("history-mia");
+        postSportsView("history-mia");
+        postSportsView("history-mia");
 
         String body = mockMvc.perform(get("/entities/history-mia/history"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
         assertThat(occurrencesOf("\"confidence\"", body), is(3));
-        assertThat(body, containsString("\"primaryProfile\":\"Explorer\""));
+        assertThat(body, containsString("\"primaryProfile\":\"Sports Follower\""));
     }
 
     @Test
@@ -59,11 +59,12 @@ public class HistoryControllerTest {
         assertThat(body, is("[]"));
     }
 
-    private void postEvent(String entityId, String type) throws Exception {
+    private void postSportsView(String entityId) throws Exception {
         mockMvc.perform(post("/events")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"entityId\":\"" + entityId + "\",\"type\":\"" + type
-                        + "\",\"occurredAt\":\"2013-07-15T09:00:00\"}"))
+                .content("{\"entityId\":\"" + entityId
+                        + "\",\"type\":\"article_view\",\"occurredAt\":\"2014-03-01T09:00:00Z\","
+                        + "\"attributes\":{\"topic\":\"sports\"}}"))
                 .andExpect(status().isAccepted());
     }
 

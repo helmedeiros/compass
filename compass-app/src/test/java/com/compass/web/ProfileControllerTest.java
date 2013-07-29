@@ -36,21 +36,25 @@ public class ProfileControllerTest {
     }
 
     @Test
-    public void reports_the_primary_profile_and_confidence_from_posted_events() throws Exception {
-        for (int i = 0; i < 8; i++) {
-            postEvent("explorer-eve", "search");
+    public void reports_the_primary_profile_and_evidence_from_posted_events() throws Exception {
+        for (int i = 0; i < 5; i++) {
+            postTopicEvent("sports-eve", "article_view", "sports");
+        }
+        for (int i = 0; i < 3; i++) {
+            postTopicEvent("sports-eve", "video_watch", "sports");
         }
         for (int i = 0; i < 2; i++) {
-            postEvent("explorer-eve", "purchase");
+            postTopicEvent("sports-eve", "article_view", "markets");
         }
+        postPlainEvent("sports-eve", "subscribe");
 
-        String body = mockMvc.perform(get("/entities/explorer-eve/profile"))
+        String body = mockMvc.perform(get("/entities/sports-eve/profile"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat(body, containsString("\"primaryProfile\":\"Explorer\""));
-        assertThat(body, containsString("\"confidence\":0.8"));
-        assertThat(body, containsString("\"high_search_depth\""));
+        assertThat(body, containsString("\"primaryProfile\":\"Sports Follower\""));
+        assertThat(body, containsString("\"follows_sports\""));
+        assertThat(body, containsString("\"Subscriber\""));
     }
 
     @Test
@@ -63,11 +67,19 @@ public class ProfileControllerTest {
         assertThat(body, containsString("\"confidence\":0.0"));
     }
 
-    private void postEvent(String entityId, String type) throws Exception {
+    private void postTopicEvent(String entityId, String type, String topic) throws Exception {
         mockMvc.perform(post("/events")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"entityId\":\"" + entityId + "\",\"type\":\"" + type
-                        + "\",\"occurredAt\":\"2013-07-15T09:00:00\"}"))
+                        + "\",\"occurredAt\":\"2014-03-01T09:00:00Z\",\"attributes\":{\"topic\":\"" + topic + "\"}}"))
+                .andExpect(status().isAccepted());
+    }
+
+    private void postPlainEvent(String entityId, String type) throws Exception {
+        mockMvc.perform(post("/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"entityId\":\"" + entityId + "\",\"type\":\"" + type
+                        + "\",\"occurredAt\":\"2014-03-01T09:00:00Z\"}"))
                 .andExpect(status().isAccepted());
     }
 }

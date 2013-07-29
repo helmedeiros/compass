@@ -43,7 +43,7 @@ public class IngestControllerTest {
     public void accepts_an_event_and_stores_it_for_the_entity() throws Exception {
         mockMvc.perform(post("/events")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"entityId\":\"ingest-sam\",\"type\":\"search\",\"occurredAt\":\"2013-07-15T09:00:00\"}"))
+                .content("{\"entityId\":\"ingest-sam\",\"type\":\"article_view\",\"occurredAt\":\"2013-07-15T09:00:00\"}"))
                 .andExpect(status().isAccepted());
 
         assertThat(eventStore.eventsOf(EntityId.of("ingest-sam")).size(), is(1));
@@ -53,7 +53,7 @@ public class IngestControllerTest {
     public void rejects_an_event_with_a_blank_entity() throws Exception {
         mockMvc.perform(post("/events")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"entityId\":\"\",\"type\":\"search\",\"occurredAt\":\"2013-07-15T09:00:00\"}"))
+                .content("{\"entityId\":\"\",\"type\":\"article_view\",\"occurredAt\":\"2013-07-15T09:00:00\"}"))
                 .andExpect(status().isBadRequest());
     }
 }
