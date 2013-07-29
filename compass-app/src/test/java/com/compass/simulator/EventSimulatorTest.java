@@ -4,7 +4,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.joda.time.DateTime;
 import org.junit.Test;
@@ -44,6 +46,16 @@ public class EventSimulatorTest {
         for (Event event : ingested) {
             assertThat(event.entityId(), is(alice));
         }
+    }
+
+    @Test
+    public void attaches_attributes_to_the_events_it_creates() {
+        Map<String, Object> sports = new HashMap<String, Object>();
+        sports.put("topic", "sports");
+
+        simulator.simulate(SyntheticBehavior.forEntity(alice).does("article_view", sports, 1), startingAt);
+
+        assertThat(ingested.get(0).attribute("topic"), is("sports"));
     }
 
     @Test

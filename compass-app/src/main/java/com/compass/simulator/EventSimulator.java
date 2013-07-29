@@ -1,7 +1,5 @@
 package com.compass.simulator;
 
-import java.util.Map;
-
 import org.joda.time.DateTime;
 
 import com.compass.domain.model.Event;
@@ -26,9 +24,9 @@ public final class EventSimulator {
             throw new IllegalArgumentException("startingAt must not be null");
         }
         DateTime when = startingAt;
-        for (Map.Entry<String, Integer> action : behavior.eventCounts().entrySet()) {
-            for (int i = 0; i < action.getValue(); i++) {
-                ingestEvent.ingest(Event.of(behavior.entityId(), action.getKey(), when));
+        for (SyntheticBehavior.Action action : behavior.actions()) {
+            for (int i = 0; i < action.times(); i++) {
+                ingestEvent.ingest(Event.of(behavior.entityId(), action.eventType(), when, action.attributes()));
                 when = when.plusMinutes(1);
             }
         }
