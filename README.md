@@ -45,3 +45,7 @@ mvn -pl compass-app jetty:run   # run the REST API on http://localhost:8080
 ## Status
 
 Work in progress. This is a small project to study. It is not deployed.
+
+## License
+
+[MIT](LICENSE)
